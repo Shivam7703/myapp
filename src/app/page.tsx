@@ -1,101 +1,122 @@
-import Image from "next/image";
+// src/app/page.tsx
+'use client';
+
+import { useState, useEffect } from 'react';
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [result, setResult] = useState<{
+    success: boolean;
+    message: string;
+    error?: string;
+    screenshot?: string;
+  } | null>(null);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+  // Client-side fullscreen method
+  const enterClientFullscreen = () => {
+    const element = document.documentElement;
+    if (element.requestFullscreen) {
+      element.requestFullscreen();
+    } else if ((element as any).mozRequestFullScreen) {
+      (element as any).mozRequestFullScreen();
+    } else if ((element as any).webkitRequestFullscreen) {
+      (element as any).webkitRequestFullscreen();
+    } else if ((element as any).msRequestFullscreen) {
+      (element as any).msRequestFullscreen();
+    }
+  };
+
+  // Automation run method
+  const runAutomation = async () => {
+    try {
+      const response = await fetch('/api/fullscreen', {
+        cache: 'no-store',
+        method: 'GET'
+      });
+
+      const data = await response.json();
+
+      // Attempt client-side fullscreen as a fallback
+      if (response.ok) {
+        enterClientFullscreen();
+      }
+
+      setResult({
+        success: response.ok,
+        message: data.message || 'Unknown result',
+        error: data.error,
+        screenshot: data.screenshot
+      });
+    } catch (error) {
+      setResult({
+        success: false,
+        message: 'Failed to run automation',
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  };
+
+
+  useEffect(() => {
+    runAutomation(); // Automatically run the automation on component load
+  }, []); 
+
+  // Optional: Exit fullscreen
+  const exitFullscreen = () => {
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    } else if ((document as any).mozCancelFullScreen) {
+      (document as any).mozCancelFullScreen();
+    } else if ((document as any).webkitExitFullscreen) {
+      (document as any).webkitExitFullscreen();
+    } else if ((document as any).msExitFullscreen) {
+      (document as any).msExitFullscreen();
+    }
+  };
+
+  return (
+    <main className="min-h-screen flex flex-col items-center justify-center p-8 bg-gray-100">
+      <div className="w-full max-w-md bg-white shadow-md rounded-lg p-6">
+        <h1 className="text-2xl font-bold mb-4 text-center text-gray-800">
+          Fullscreen Automation
+        </h1>
+        
+        <div className="space-y-4">
+          <button 
+            onClick={runAutomation}
+            className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            Run Fullscreen Automation
+          </button>
+
+          <button 
+            onClick={exitFullscreen}
+            className="w-full bg-red-500 text-white py-2 rounded hover:bg-red-600 transition"
           >
-            Read our docs
-          </a>
+            Exit Fullscreen
+          </button>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+
+        {result && (
+          <div className={`mt-4 p-3 rounded ${result.success ? 'bg-green-100' : 'bg-red-100'}`}>
+            <p className={`${result.success ? 'text-green-800' : 'text-red-800'}`}>
+              {result.message}
+            </p>
+            {result.error && (
+              <p className="text-sm text-red-600 mt-2">Error: {result.error}</p>
+            )}
+            {result.screenshot && (
+              <div className="mt-4">
+                <p className="text-sm mb-2">Screenshot:</p>
+                <img 
+                  src={`data:image/png;base64,${result.screenshot}`} 
+                  alt="Automation Screenshot" 
+                  className="max-w-full rounded"
+                />
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </main>
   );
 }
